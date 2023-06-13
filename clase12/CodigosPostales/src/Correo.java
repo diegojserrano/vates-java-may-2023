@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Correo {
 
@@ -32,8 +33,8 @@ public class Correo {
                 .toList();
     }
 
-    public Map<String, Integer> cantidadPorProvincia() {
-        Map<String, Contador> cantidades = new HashMap<>();
+    public Map<String, Long> cantidadPorProvincia() {
+        /*Map<String, Contador> cantidades = new HashMap<>();
         cantidades.put("K", new Contador());
         cantidades.put("X", new Contador());
         cantidades.put("H", new Contador());
@@ -44,6 +45,10 @@ public class Correo {
         Map<String, Integer> salida = new HashMap<>();
         cantidades.entrySet().stream().forEach(e -> salida.put(e.getKey(), e.getValue().getCantidad()));
         return salida;
+        */
+
+
+        return codigos.stream().collect(Collectors.groupingBy(CodigoPostal::getProvincia, Collectors.counting()));
     }
 
 }
