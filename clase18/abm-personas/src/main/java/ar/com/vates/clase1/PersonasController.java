@@ -1,5 +1,6 @@
 package ar.com.vates.clase1;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,48 +20,37 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RestController
+@RequestMapping("/personas/")
 public class PersonasController {
 
-    private Map<Integer, Persona> personas = new HashMap<>();
+    @Autowired
+    private PersonasService servicio;
 
-    public Map<Integer, Persona> getPersonas() {
-        return personas;
-    }
-
-    @GetMapping("/personas/iniciar")
-    public void iniciar() throws IOException, URISyntaxException {
-        personas = Files.lines(new ClassPathResource("personas2.txt").getFile().toPath())
-                .map(Persona::desdeString)
-                .collect(Collectors.toMap(Persona::getDocumento, Function.identity()));
-    }
-
-    @GetMapping("/personas/")
+    @GetMapping("")
     public Collection<Persona> obtenerTodas() {
-        return personas.values();
+        return servicio.obtenerTodas();
     }
 
-    @GetMapping("/personas/{documento}")
+    @GetMapping("{documento}")
     public ResponseEntity<Persona> obtenerUna(@PathVariable int documento) {
-        Persona encontrada = personas.get(documento);
+        Persona encontrada = servicio.buscar(documento);
         if (encontrada != null)
             return ResponseEntity.ok(encontrada);
         else
             return ResponseEntity.notFound().build();
     }
 
-
-
-    @DeleteMapping("/personas/{documento}")
+    @DeleteMapping("{documento}")
     public ResponseEntity<Persona> borrarUna(@PathVariable int documento) {
-        if (personas.containsKey(documento)) {
-            return ResponseEntity.ok(personas.remove(documento));
+        if (servicio.existe(documento)) {
+            return ResponseEntity.ok(servicio.borrar(documento));
         }
         else
             return ResponseEntity.notFound().build();
     }
 
 
-    @PutMapping("/personas/{documento}")
+    @PutMapping("{documento}")
     public ResponseEntity guardar(@PathVariable int documento, @RequestBody Persona nueva) {
         if (nueva.getNombre() == null || nueva.getApellido() == null || nueva.getNombre().isBlank() || nueva.getApellido().isBlank() || nueva.getEdad() < 0 || nueva.getEdad() > 120) {
             String mensaje = "Datos no válidos: ";
@@ -72,7 +62,7 @@ public class PersonasController {
         }
 
         nueva.setDocumento(documento);
-        if (personas.put(documento, nueva) == null)
+        if (servicio.guardar(nueva)) // metodo guardar de la clase PersonasService
             return ResponseEntity.created(URI.create("/personas/" + documento)).build();
         else
             return ResponseEntity.ok().build();
