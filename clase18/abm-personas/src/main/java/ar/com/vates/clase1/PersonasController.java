@@ -34,6 +34,7 @@ public class PersonasController {
     @GetMapping("{documento}")
     public ResponseEntity<Persona> obtenerUna(@PathVariable int documento) {
         Persona encontrada = servicio.buscar(documento);
+        System.out.println(encontrada);
         if (encontrada != null)
             return ResponseEntity.ok(encontrada);
         else

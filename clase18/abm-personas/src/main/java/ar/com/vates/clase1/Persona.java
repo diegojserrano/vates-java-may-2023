@@ -1,6 +1,10 @@
 package ar.com.vates.clase1;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Entity @Table(name = "personas") // Nombre de la tabla en la base de datos
 public class Persona {
@@ -14,6 +18,14 @@ public class Persona {
     private String apellido;
     @Column(name="edad")
     private int edad;
+
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "persona")
+    @JsonManagedReference
+    // joinColumn lleva el nombre de la clave foranea
+    // mappedBy debe ser un nombre de ATRIBUTO de la clase Telefono, no es una columna
+    private Collection<Telefono> telefonos;
+
 
     public Persona(int documento, String nombre, String apellido, int edad) {
         this.documento = documento;
@@ -57,14 +69,18 @@ public class Persona {
         this.edad = edad;
     }
 
+
+    public Collection<Telefono> getTelefonos() {
+        return telefonos;
+    }
+
+    public void setTelefonos(Collection<Telefono> telefonos) {
+        this.telefonos = telefonos;
+    }
+
     @Override
     public String toString() {
-        return "Persona{" +
-                "documento=" + documento +
-                ", nombre='" + nombre + '\'' +
-                ", apellido='" + apellido + '\'' +
-                ", edad=" + edad +
-                '}';
+        return String.format("%d - %s %s - %d - (%s)", documento, nombre, apellido, edad, telefonos.stream().map(Telefono::toString).collect(Collectors.joining()));
     }
 
     public static Persona desdeString(String linea) {
